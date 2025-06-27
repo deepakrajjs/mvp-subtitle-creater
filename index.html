@@ -44,13 +44,13 @@
         return;
       }
 
-      output.textContent = "⏳ Uploading and transcribing... This may take a minute.";
+      output.textContent = "⏳ Uploading and transcribing... Please wait.";
 
       const formData = new FormData();
       formData.append("data", file);
       formData.append("data", "English");  // language
       formData.append("data", "openai/whisper-base"); // model
-      formData.append("data", "Yes"); // add punctuation
+      formData.append("data", "Yes"); // punctuation
 
       try {
         const response = await fetch("https://k2-fsa-generate-subtitles-for-videos.hf.space/run/predict", {
@@ -58,15 +58,25 @@
           body: formData
         });
 
-        const result = await response.json();
+        const contentType = response.headers.get("content-type");
 
-        if (result && result.data && result.data[0]) {
-          output.textContent = "✅ Transcript:\n\n" + result.data[0];
-        } else {
-          output.textContent = "❌ Failed to get transcription.";
+        if (!response.ok) {
+          const errorText = await response.text();
+          output.textContent = `❌ Server Error (${response.status}): ${errorText}`;
+          return;
         }
+
+        if (contentType && contentType.includes("application/json")) {
+          const result = await response.json();
+          const text = result?.data?.[0] || "⚠️ No transcript returned.";
+          output.textContent = "✅ Transcript:\n\n" + text;
+        } else {
+          const errorText = await response.text();
+          output.textContent = `❌ Error: Unexpected response.\n\n${errorText}`;
+        }
+
       } catch (err) {
-        output.textContent = "❌ Error: " + err.message;
+        output.textContent = "❌ Network error: " + err.message;
       }
     }
   </script>
