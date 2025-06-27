@@ -1,50 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Video Subtitle Generator</title>
+  <meta charset="UTF-8" />
+  <title>🎬 Subtitle Generator (Whisper API)</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
     h1 { text-align: center; }
-    input, button { margin: 10px 0; padding: 10px; font-size: 1rem; }
-    pre { background: white; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      margin: 10px 0;
+    }
+    .output {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      box-shadow: 0 0 10px #ccc;
+    }
   </style>
 </head>
 <body>
-  <h1>🎬 Generate Subtitles from Video (Hugging Face)</h1>
+  <h1>🎬 Whisper Subtitle Generator</h1>
 
-  <input type="file" id="videoInput" accept="video/mp4">
-  <button onclick="uploadAndTranscribe()">Transcribe Video</button>
+  <input type="file" id="fileInput" accept="video/mp4,audio/wav,audio/mp3" />
+  <button onclick="uploadAndTranscribe()">Transcribe</button>
 
-  <h3>📝 Transcript:</h3>
-  <pre id="output">Upload a video and click "Transcribe"</pre>
+  <h3>📝 Output Transcript:</h3>
+  <div id="output" class="output">Waiting for input...</div>
 
   <script>
     async function uploadAndTranscribe() {
-      const fileInput = document.getElementById("videoInput");
+      const fileInput = document.getElementById("fileInput");
       const output = document.getElementById("output");
       const file = fileInput.files[0];
 
       if (!file) {
-        alert("Please select a video file first.");
+        alert("Please select a file.");
         return;
       }
 
-      output.textContent = "Uploading and processing... This may take a while ⏳";
+      output.textContent = "⏳ Uploading and transcribing... This may take a minute.";
 
       const formData = new FormData();
       formData.append("data", file);
       formData.append("data", "English");  // language
+      formData.append("data", "openai/whisper-base"); // model
+      formData.append("data", "Yes"); // add punctuation
 
-      const response = await fetch("https://k2-fsa-generate-subtitles-for-videos.hf.space/run/predict", {
-        method: "POST",
-        body: formData
-      });
+      try {
+        const response = await fetch("https://k2-fsa-generate-subtitles-for-videos.hf.space/run/predict", {
+          method: "POST",
+          body: formData
+        });
 
-      const result = await response.json();
-      const subtitleText = result.data?.[0] || "❌ Failed to get subtitles";
+        const result = await response.json();
 
-      output.textContent = subtitleText;
+        if (result && result.data && result.data[0]) {
+          output.textContent = "✅ Transcript:\n\n" + result.data[0];
+        } else {
+          output.textContent = "❌ Failed to get transcription.";
+        }
+      } catch (err) {
+        output.textContent = "❌ Error: " + err.message;
+      }
     }
   </script>
 </body>
