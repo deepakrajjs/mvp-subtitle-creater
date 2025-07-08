@@ -4,7 +4,7 @@ Subtitle Creater is a simple web tool for creating subtitles. It is built using 
 
 ## Features...
 
-- Create and edit subtitles easily
+- Create and edit subtitles easily.....
 - Simple and user-friendly interface
 
 ## Getting Started
