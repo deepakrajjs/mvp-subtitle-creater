@@ -9,4 +9,4 @@ Subtitle Creater is a simple web tool for creating subtitles. It is built using 
 
 ## Getting Started
 
-1. Clone the repository:
+1. Clone the repository:.......
